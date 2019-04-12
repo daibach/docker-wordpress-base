@@ -1,4 +1,4 @@
-FROM wordpress:4.9-php7.3-apache
+FROM wordpress:4.9-php7.2-apache
 
 # Setup wordpress installation location
 RUN mkdir -p /var/www/wordpress \
@@ -24,4 +24,3 @@ RUN { \
 	&& a2enconf docker-harden \
   && service apache2 restart
 RUN sed -i -e s/expose_php=on/expose_php=off/g "$PHP_INI_DIR/php.ini"
-

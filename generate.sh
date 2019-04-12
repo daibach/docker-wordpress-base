@@ -37,6 +37,6 @@ gen() {
 }
 
 gen 4.9 5.6 wp4.9-oldphp
-gen 4.9 7.3 wp4.9
+gen 4.9 7.2 wp4.9
 gen 5.0 7.3 wp5.0
 gen 5.1 7.3 wp5.1

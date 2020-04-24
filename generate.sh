@@ -42,3 +42,5 @@ gen 5.0 7.3 wp5.0
 gen 5.1 7.3 wp5.1
 gen 5.2 7.3 wp5.2
 gen 5.3 7.3 wp5.3
+gen 5.4 7.3 wp5.4
+gen 5.4 7.4 wp5.4-php7.4

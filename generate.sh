@@ -36,14 +36,6 @@ gen() {
   echo '' >> ${NAME}/Dockerfile
 }
 
-gen 4.9 5.6 wp4.9-oldphp
-gen 4.9 7.2 wp4.9
-gen 5.0 7.3 wp5.0
-gen 5.1 7.3 wp5.1
-gen 5.2 7.3 wp5.2
-gen 5.3 7.3 wp5.3
-gen 5.4 7.3 wp5.4
-gen 5.4 7.4 wp5.4-php7.4
 gen 5.5 7.4 wp5.5
 gen 5.6 7.4 wp5.6
 gen 5.6 8.0 wp5.6-php8.0

@@ -38,4 +38,7 @@ gen() {
 
 gen 5.5 7.4 wp5.5
 gen 5.6 7.4 wp5.6
+gen 5.7 7.4 wp5.7
+
 gen 5.6 8.0 wp5.6-php8.0
+gen 5.7 8.0 wp5.7-php8.0

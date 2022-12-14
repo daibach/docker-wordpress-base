@@ -48,3 +48,6 @@ gen 5.8 8.0 wp5.8
 
 gen 5.9 7.4 wp5.9-legacy
 gen 5.9 8.0 wp5.9
+
+gen 6.0 8.0 wp6.0
+gen 6.0 8.1 wp6.0-php8.1

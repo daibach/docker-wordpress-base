@@ -48,3 +48,5 @@ gen 6.1 8.1 wp6.1
 gen 6.2 8.0 wp6.2-php8.0
 gen 6.2 8.1 wp6.2
 gen 6.2 8.2 wp6.2-php8.2
+
+gen 6.4 8.2 wp6.4

@@ -24,3 +24,4 @@ RUN { \
 	&& a2enconf docker-harden \
   && service apache2 restart
 RUN sed -i -e s/expose_php=on/expose_php=off/g "$PHP_INI_DIR/php.ini"
+

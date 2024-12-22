@@ -53,3 +53,6 @@ gen 6.4 8.2 wp6.4
 
 gen 6.6 7.4 wp6.6-legacy
 gen 6.6 8.2 wp6.6
+
+gen 6.7 7.4 wp6.7-legacy
+gen 6.7 8.2 wp6.7

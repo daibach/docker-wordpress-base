@@ -56,3 +56,7 @@ gen 6.6 8.2 wp6.6
 
 gen 6.7 7.4 wp6.7-legacy
 gen 6.7 8.2 wp6.7
+
+gen 6.8 7.4 wp6.8-legacy
+gen 6.8 8.2 wp6.8
+gen 6.8 8.4 wp6.8-php8.4

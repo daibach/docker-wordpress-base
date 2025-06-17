@@ -39,18 +39,6 @@ gen() {
 gen 5.9 7.4 wp5.9-legacy
 gen 5.9 8.0 wp5.9
 
-gen 6.0 8.0 wp6.0
-gen 6.0 8.1 wp6.0-php8.1
-
-gen 6.1 8.0 wp6.1-php8.0
-gen 6.1 8.1 wp6.1
-
-gen 6.2 8.0 wp6.2-php8.0
-gen 6.2 8.1 wp6.2
-gen 6.2 8.2 wp6.2-php8.2
-
-gen 6.4 8.2 wp6.4
-
 gen 6.6 7.4 wp6.6-legacy
 gen 6.6 8.2 wp6.6
 

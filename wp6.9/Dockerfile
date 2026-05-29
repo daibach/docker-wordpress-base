@@ -1,4 +1,4 @@
-FROM wordpress:6.7-php8.2-apache
+FROM wordpress:6.9-php8.4-apache
 
 # Setup wordpress installation location
 RUN mkdir -p /var/www/wordpress \

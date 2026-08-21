@@ -36,14 +36,11 @@ gen() {
   echo '' >> ${NAME}/Dockerfile
 }
 
-gen 5.9 7.4 wp5.9-legacy
-gen 5.9 8.0 wp5.9
-
-gen 6.8 8.2 wp6.8
-gen 6.8 8.4 wp6.8-php8.4
-
 gen 6.9 8.4 wp6.9
 gen 6.9 8.5 wp6.9-php8.5
 
 gen 7.0 8.4 wp7.0
 gen 7.0 8.5 wp7.0-php8.5
+
+gen 7.1 8.4 wp7.1
+gen 7.1 8.5 wp7.1-php8.5

@@ -88,6 +88,28 @@ without updates until they are deleted there.
 `legacy_aliases` maps a build to the legacy tags it also publishes. Don't add
 to it.
 
+### Updates
+
+[Renovate](renovate.json) keeps `versions.json` and the GitHub Actions up to
+date through pull requests:
+
+- **WordPress patch releases** (7.1.3 to 7.1.4) are grouped into one PR and
+  auto-merged once `Build result` passes. Each WordPress minor version gets
+  its own patch updates.
+- **New WordPress minor and major versions** are not proposed. Add them to
+  `versions.json` by hand.
+- **GitHub Actions** are pinned by commit SHA with the version in a comment.
+  Minor, patch and digest updates are auto-merged.
+
+WordPress security releases are patch releases, so they reach these images
+soon after upstream publishes them. Apps get them only when they rebuild.
+
+Renovate usually has no release date for `wordpress` tags, because Docker Hub
+only lists the newest 1,000 tags to anonymous clients. The config therefore
+lets patch updates through without one (`timestamp-optional`) rather than
+holding them forever. If a PR's build runs before upstream has published every
+PHP variant, the build fails and nothing merges. Re-run the check later.
+
 ## Building and testing locally
 
 ```sh
@@ -124,3 +146,5 @@ when every build passed, and is the required check on `main`.
 | `DOCKERHUB_USERNAME` | Repository variable |
 | `DOCKERHUB_TOKEN` | Repository secret: a Docker Hub access token with Read & Write scope |
 | "Protect main" ruleset | No deletion or force push, pull request required, required check `Build result` |
+| Renovate | The Mend Renovate GitHub app has access to this repo, set to Interactive mode on developer.mend.io |
+| Allow auto-merge | Repository setting, needed for Renovate to auto-merge |

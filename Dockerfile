@@ -1,6 +1,10 @@
 # syntax=docker/dockerfile:1
+# check=skip=InvalidDefaultArgInFrom
 # cedyrn/wordpress-parent: the official WordPress image with the document root
 # moved to /var/www/wordpress and Apache and PHP hardened.
+
+# No defaults: versions come only from versions.json, so a build without
+# them fails rather than using a version set here.
 ARG WORDPRESS_VERSION
 ARG PHP_VERSION
 

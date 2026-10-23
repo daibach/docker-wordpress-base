@@ -178,9 +178,25 @@ per WordPress and PHP version in `versions.json`. It runs on pull requests,
 on pushes to `main`, weekly (Mondays at 04:00 UTC, to pick up upstream PHP and
 Debian fixes), and by hand.
 
-Each image is built, smoke-tested, then that same image is pushed. Pull
-requests build and test without pushing. The `Build result` job passes only
-when every build passed, and is the required check on `main`.
+Each image is built for `linux/amd64` and pushed by digest only, with no tag.
+That exact digest is pulled and smoke-tested, then tagged. Tags never point at
+an untested image. A build that fails its tests leaves an untagged image on
+Docker Hub, which does no harm. Pull requests build and test without pushing.
+The `Build result` job passes only when every build passed, and is the
+required check on `main`.
+
+Published images carry [provenance](https://docs.docker.com/build/metadata/attestations/slsa-provenance/)
+(`mode=max`: the base image, build arguments and source) and an
+[SBOM](https://docs.docker.com/build/metadata/attestations/sbom/) of their
+packages. To view them:
+
+```sh
+docker buildx imagetools inspect cedyrn/wordpress-parent:7.1.3-php8.4 --format '{{json .Provenance}}'
+docker buildx imagetools inspect cedyrn/wordpress-parent:7.1.3-php8.4 --format '{{json .SBOM}}'
+```
+
+Docker Hub lists the attestations as an extra `unknown/unknown` platform.
+Pulling the image ignores them.
 
 ### Configuration
 

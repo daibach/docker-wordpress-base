@@ -55,6 +55,9 @@ for ext in mysqli curl dom exif fileinfo gd imagick intl json mbstring openssl x
   echo "$MODULES" | grep -qix "$ext" || fail "extension $ext not loaded"
 done
 
+echo "== PHP config"
+run php -i | grep -qx 'expose_php => Off => Off' || fail "expose_php is not Off"
+
 echo "== Apache config"
 run apache2ctl -t
 docker run --rm --entrypoint grep "$IMAGE" -Eq "^\s*DocumentRoot $DOCROOT\s*$" \

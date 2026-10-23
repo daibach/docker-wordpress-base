@@ -30,3 +30,28 @@ COPY rootfs/ /
 RUN a2enmod rewrite headers \
   && a2disconf security \
   && a2enconf docker-harden
+
+# Describes this build, for apps to report (e.g. in a health check endpoint).
+# Last, so a new build date doesn't invalidate the cache of earlier layers.
+ARG TARGETARCH
+ARG BUILD_DATE
+ARG BUILD_REVISION
+ARG BUILD_URL
+RUN set -eux; \
+    mkdir -p /etc/wordpress-parent; \
+    BUILD_DATE="${BUILD_DATE:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}" php -r ' \
+      $wp_version = (function () { \
+        include "/usr/src/wordpress/wp-includes/version.php"; \
+        return $wp_version; \
+      })(); \
+      echo json_encode([ \
+        "image" => "cedyrn/wordpress-parent", \
+        "wordpress_version" => $wp_version, \
+        "php_version" => PHP_VERSION, \
+        "debian_version" => trim(file_get_contents("/etc/debian_version")), \
+        "architecture" => getenv("TARGETARCH"), \
+        "built_at" => getenv("BUILD_DATE"), \
+        "source_revision" => getenv("BUILD_REVISION") ?: null, \
+        "build_url" => getenv("BUILD_URL") ?: null, \
+      ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), "\n";' > /etc/wordpress-parent/build.json; \
+    cat /etc/wordpress-parent/build.json

@@ -82,6 +82,9 @@ rm -f /tmp/smoke-body-$$
 echo "$HEADERS" | grep -qi '^x-powered-by:' && fail "X-Powered-By header present"
 echo "$HEADERS" | grep -qi '^server: Apache[[:space:]]*$' || fail "Server header not minimal: $(echo "$HEADERS" | grep -i '^server:')"
 
+echo "== Apache starts without warnings"
+docker logs "$CONTAINER" 2>&1 | grep -q AH00558 && fail "Apache could not determine ServerName (AH00558)"
+
 echo "== WordPress copied into the document root"
 docker exec "$CONTAINER" test -f "$DOCROOT/wp-includes/version.php" || fail "WordPress not in $DOCROOT"
 

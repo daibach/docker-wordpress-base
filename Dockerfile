@@ -11,7 +11,7 @@ RUN mkdir -p /var/www/wordpress \
   && chown www-data:www-data /var/www/wordpress \
   && find /etc/apache2 -name '*.conf' -type f -exec sed -ri -e 's!/var/www/html!/var/www/wordpress!g' -e 's!Directory /var/www/!Directory /var/www/wordpress!g' '{}' +
 WORKDIR /var/www/wordpress
-ENV APACHE_DOCUMENT_ROOT /var/www/wordpress
+ENV APACHE_DOCUMENT_ROOT=/var/www/wordpress
 
 # Install dependencies and extensions
 RUN a2enmod rewrite

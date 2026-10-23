@@ -1,4 +1,10 @@
-FROM wordpress:7.0-php8.4-apache
+# syntax=docker/dockerfile:1
+# cedyrn/wordpress-parent: the official WordPress image with the document root
+# moved to /var/www/wordpress and Apache and PHP hardened.
+ARG WORDPRESS_VERSION
+ARG PHP_VERSION
+
+FROM wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-apache
 
 # Setup wordpress installation location
 RUN mkdir -p /var/www/wordpress \

@@ -18,14 +18,8 @@ RUN a2enmod rewrite
 
 # Harden php and apache
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
-RUN { \
-		echo ServerTokens Prod; \
-		echo ServerSignature Off; \
-    echo TraceEnable Off; \
-		echo Header always unset X-Powered-By; \
-    echo Header unset X-Powered-By; \
-  } | tee "$APACHE_CONFDIR/conf-available/docker-harden.conf" \
-  && a2enmod headers \
+COPY rootfs/ /
+RUN a2enmod headers \
   && a2disconf security \
 	&& a2enconf docker-harden \
   && service apache2 restart

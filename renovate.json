@@ -1,7 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    "customManagers:githubActionsVersions"
   ],
   "customManagers": [
     {
@@ -70,6 +71,17 @@
         "digest"
       ],
       "automerge": true
+    },
+    {
+      "description": "Trivy is downloaded by checksum, which must be updated by hand in the same PR",
+      "matchDepNames": [
+        "aquasecurity/trivy"
+      ],
+      "minimumReleaseAge": "3 days",
+      "automerge": false,
+      "prBodyNotes": [
+        "Update `TRIVY_LINUX_64BIT_SHA256` in `.github/actions/setup-trivy/action.yml` to the `Linux-64bit.tar.gz` checksum from the release's `checksums.txt` before merging. The build fails until it matches."
+      ]
     }
   ]
 }

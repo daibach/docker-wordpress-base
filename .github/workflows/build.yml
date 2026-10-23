@@ -124,6 +124,31 @@ jobs:
           docker buildx imagetools create "$@" "${IMAGE}@${DIGEST}"
           docker buildx imagetools inspect "${IMAGE}:${{ matrix.name }}"
 
+      # The scanner never sees the Docker Hub token
+      - name: Log out of Docker Hub
+        if: github.event_name != 'pull_request'
+        run: docker logout
+
+      - name: Set up Trivy
+        uses: ./.github/actions/setup-trivy
+
+      # Report only: findings never fail the build. Published images are also
+      # scanned daily by scan.yml.
+      - name: Vulnerability scan
+        continue-on-error: true
+        env:
+          REF: ${{ steps.image.outputs.ref }}
+        run: |
+          trivy image --scanners vuln --ignore-unfixed --severity HIGH,CRITICAL \
+            --format table --output trivy.txt "${REF}"
+          cat trivy.txt
+          {
+            echo "### ${{ matrix.name }}: fixable HIGH and CRITICAL vulnerabilities"
+            echo '```'
+            if [ -s trivy.txt ]; then cat trivy.txt; else echo "None"; fi
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
   # Single required status check for branch protection, independent of
   # which versions are in the matrix.
   result:

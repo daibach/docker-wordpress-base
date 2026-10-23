@@ -20,34 +20,42 @@ env:
   IMAGE: cedyrn/wordpress-parent
 
 jobs:
+  matrix:
+    name: Build matrix
+    runs-on: ubuntu-latest
+    outputs:
+      include: ${{ steps.matrix.outputs.include }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # One entry per WordPress and PHP version in versions.json, tagged
+      # exactly (7.1.3-php8.4) and by minor version (7.1-php8.4), plus the
+      # frozen legacy aliases (-latest is PHP 8.4, -future is PHP 8.5)
+      - name: Generate matrix
+        id: matrix
+        run: |
+          include=$(jq -c '
+            . as $v
+            | [ $v.wordpress | to_entries[] as $wp
+                | $v.php[] as $php
+                | "\($wp.key)-php\($php)" as $name
+                | { name: $name, wordpress: $wp.value, php: $php,
+                    tags: ( ["\($wp.value)-php\($php)", $name] + ($v.legacy_aliases[$name] // [])
+                            | map("type=raw,value=\(.)") | join("\n") ) } ]
+          ' versions.json)
+          echo "include=${include}" >> "$GITHUB_OUTPUT"
+          echo "${include}" | jq .
+
   build:
-    name: ${{ matrix.dir }}
+    name: ${{ matrix.name }}
+    needs: matrix
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        # The tags Docker Hub autobuilds published: -latest is PHP 8.4,
-        # -future is PHP 8.5
-        include:
-          - dir: wp7.1
-            wordpress: "7.1"
-            php: "8.4"
-            tags: |
-              type=raw,value=7.1-latest
-              type=raw,value=latest
-          - dir: wp7.1-php8.5
-            wordpress: "7.1"
-            php: "8.5"
-            tags: type=raw,value=7.1-future
-          - dir: wp7.0
-            wordpress: "7.0"
-            php: "8.4"
-            tags: type=raw,value=7.0-latest
-          - dir: wp7.0-php8.5
-            wordpress: "7.0"
-            php: "8.5"
-            tags: type=raw,value=7.0-future
+        include: ${{ fromJSON(needs.matrix.outputs.include) }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -71,7 +79,10 @@ jobs:
       - name: Build
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
-          context: ${{ matrix.dir }}
+          context: .
+          build-args: |
+            WORDPRESS_VERSION=${{ matrix.wordpress }}
+            PHP_VERSION=${{ matrix.php }}
           pull: true
           load: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -88,9 +99,11 @@ jobs:
   # which versions are in the matrix.
   result:
     name: Build result
-    needs: [build]
+    needs: [matrix, build]
     if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Check all builds passed
-        run: test "${{ needs.build.result }}" = "success"
+        run: |
+          test "${{ needs.matrix.result }}" = "success"
+          test "${{ needs.build.result }}" = "success"

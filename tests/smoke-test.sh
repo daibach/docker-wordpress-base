@@ -55,6 +55,9 @@ for ext in mysqli curl dom exif fileinfo gd imagick intl json mbstring openssl x
   echo "$MODULES" | grep -qix "$ext" || fail "extension $ext not loaded"
 done
 
+echo "== PHP config"
+run php -i | grep -qx 'expose_php => Off => Off' || fail "expose_php is not Off"
+
 echo "== Apache config"
 run apache2ctl -t
 docker run --rm --entrypoint grep "$IMAGE" -Eq "^\s*DocumentRoot $DOCROOT\s*$" \
@@ -78,6 +81,9 @@ rm -f /tmp/smoke-body-$$
 [ "$BODY" = "smoke-ok" ] || fail "unexpected body: $BODY"
 echo "$HEADERS" | grep -qi '^x-powered-by:' && fail "X-Powered-By header present"
 echo "$HEADERS" | grep -qi '^server: Apache[[:space:]]*$' || fail "Server header not minimal: $(echo "$HEADERS" | grep -i '^server:')"
+
+echo "== Apache starts without warnings"
+docker logs "$CONTAINER" 2>&1 | grep -q AH00558 && fail "Apache could not determine ServerName (AH00558)"
 
 echo "== WordPress copied into the document root"
 docker exec "$CONTAINER" test -f "$DOCROOT/wp-includes/version.php" || fail "WordPress not in $DOCROOT"

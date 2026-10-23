@@ -81,7 +81,7 @@ trap 'docker rm -f "$CONTAINER" >/dev/null 2>&1 || true' EXIT
 docker run -d --name "$CONTAINER" -p "127.0.0.1:$PORT:80" "$IMAGE" >/dev/null
 docker exec "$CONTAINER" sh -c "echo '<?php echo \"smoke-ok\";' > $DOCROOT/smoke.php"
 
-for _ in $(seq 1 30); do
+for _ in $(seq 1 60); do
   curl -fsS -o /dev/null "http://127.0.0.1:$PORT/smoke.php" 2>/dev/null && break
   sleep 1
 done

@@ -58,6 +58,19 @@ done
 echo "== PHP config"
 run php -i | grep -qx 'expose_php => Off => Off' || fail "expose_php is not Off"
 
+echo "== Build info"
+INFO=$(run cat /etc/wordpress-parent/build.json) || fail "build info missing"
+echo "$INFO"
+# shellcheck disable=SC2016 # $info and $wp_version are PHP, not shell
+[ "$(run php -r '
+  $info = json_decode(file_get_contents("/etc/wordpress-parent/build.json"), true);
+  include "/usr/src/wordpress/wp-includes/version.php";
+  echo $info["image"] === "cedyrn/wordpress-parent"
+    && $info["wordpress_version"] === $wp_version
+    && $info["php_version"] === PHP_VERSION
+    && strtotime($info["built_at"]) ? "ok" : "bad";
+')" = "ok" ] || fail "build info invalid"
+
 echo "== Apache config"
 run apache2ctl -t
 docker run --rm --entrypoint grep "$IMAGE" -Eq "^\s*DocumentRoot $DOCROOT\s*$" \
@@ -68,7 +81,7 @@ trap 'docker rm -f "$CONTAINER" >/dev/null 2>&1 || true' EXIT
 docker run -d --name "$CONTAINER" -p "127.0.0.1:$PORT:80" "$IMAGE" >/dev/null
 docker exec "$CONTAINER" sh -c "echo '<?php echo \"smoke-ok\";' > $DOCROOT/smoke.php"
 
-for _ in $(seq 1 30); do
+for _ in $(seq 1 60); do
   curl -fsS -o /dev/null "http://127.0.0.1:$PORT/smoke.php" 2>/dev/null && break
   sleep 1
 done

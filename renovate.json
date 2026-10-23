@@ -1,0 +1,75 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "customManagers": [
+    {
+      "description": "WordPress versions in versions.json, looked up as wordpress image tags on Docker Hub",
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^versions\\.json$/"
+      ],
+      "matchStrings": [
+        "\"\\d+\\.\\d+\":\\s*\"(?<currentValue>\\d+\\.\\d+\\.\\d+)\""
+      ],
+      "depNameTemplate": "wordpress",
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "docker"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Offer patch updates separately, otherwise only the latest minor is proposed",
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "matchDepNames": [
+        "wordpress"
+      ],
+      "separateMinorPatch": true
+    },
+    {
+      "description": "New WordPress minor/major versions are added to versions.json by hand",
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "matchDepNames": [
+        "wordpress"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "major"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "Auto-merge WordPress patch releases once all upstream PHP variants have had time to publish. Docker Hub only lists the newest 1,000 tags to anonymous clients, so Renovate usually has no release timestamp for wordpress tags; timestamp-optional stops those updates being held as pending forever. The build fails if a PHP variant is missing, so nothing merges early.",
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "matchDepNames": [
+        "wordpress"
+      ],
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "groupName": "WordPress patch versions",
+      "minimumReleaseAge": "1 hour",
+      "minimumReleaseAgeBehaviour": "timestamp-optional",
+      "automerge": true
+    },
+    {
+      "description": "Auto-merge non-major GitHub Actions updates",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest"
+      ],
+      "automerge": true
+    }
+  ]
+}

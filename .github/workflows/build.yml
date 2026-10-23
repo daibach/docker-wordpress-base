@@ -29,7 +29,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      # One entry per WordPress and PHP version in versions.json, with the
+      # One entry per WordPress and PHP version in versions.json, tagged
+      # exactly (7.1.3-php8.4) and by minor version (7.1-php8.4), plus the
       # frozen legacy aliases (-latest is PHP 8.4, -future is PHP 8.5)
       - name: Generate matrix
         id: matrix
@@ -40,7 +41,8 @@ jobs:
                 | $v.php[] as $php
                 | "\($wp.key)-php\($php)" as $name
                 | { name: $name, wordpress: $wp.value, php: $php,
-                    tags: ($v.legacy_aliases[$name] // [] | map("type=raw,value=\(.)") | join("\n")) } ]
+                    tags: ( ["\($wp.value)-php\($php)", $name] + ($v.legacy_aliases[$name] // [])
+                            | map("type=raw,value=\(.)") | join("\n") ) } ]
           ' versions.json)
           echo "include=${include}" >> "$GITHUB_OUTPUT"
           echo "${include}" | jq .

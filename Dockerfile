@@ -21,6 +21,5 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 COPY rootfs/ /
 RUN a2enmod headers \
   && a2disconf security \
-	&& a2enconf docker-harden \
-  && service apache2 restart
+	&& a2enconf docker-harden
 

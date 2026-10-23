@@ -10,6 +10,7 @@ Each image is the official `wordpress:<version>-php<php>-apache` image with:
 - Apache's version details and the `X-Powered-By` header hidden, and `TRACE`
   disabled
 - the `rewrite` and `headers` Apache modules enabled
+- Debian package updates installed at build time
 
 Apps copy their plugins, themes and other files into `/usr/src/wordpress`. The
 upstream entrypoint copies WordPress into the document root when the
@@ -24,7 +25,7 @@ COPY wp-content/plugins /usr/src/wordpress/wp-content/plugins/
 
 | Tag | Example | Updates |
 | --- | --- | --- |
-| `<wordpress>-php<php>` | `7.1.3-php8.4` | PHP patch releases and other upstream image fixes only |
+| `<wordpress>-php<php>` | `7.1.3-php8.4` | Debian updates, and PHP patch releases when upstream ships them |
 | `<wordpress minor>-php<php>` | `7.1-php8.4` | Also WordPress patch releases |
 
 Use the exact tag (`7.1.3-php8.4`) in apps, so the WordPress version only
@@ -133,7 +134,7 @@ prefix (`8.4` matches `8.4.27`).
 [`.github/workflows/build.yml`](.github/workflows/build.yml) builds one image
 per WordPress and PHP version in `versions.json`. It runs on pull requests,
 on pushes to `main`, weekly (Mondays at 04:00 UTC, to pick up upstream PHP and
-Debian fixes), and by hand.
+Debian updates), and by hand.
 
 Each image is built, smoke-tested, then that same image is pushed. Pull
 requests build and test without pushing. The `Build result` job passes only

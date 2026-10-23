@@ -10,6 +10,14 @@ ARG PHP_VERSION
 
 FROM wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-apache
 
+# Install Debian updates. Upstream only rebuilds its image for WordPress and
+# PHP releases, so security fixes would otherwise wait for the next one.
+# confold keeps upstream's changes to Apache's config files.
+RUN apt-get update \
+  && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
+    -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold \
+  && rm -rf /var/lib/apt/lists/*
+
 # Serve WordPress from /var/www/wordpress rather than /var/www/html. The
 # entrypoint copies WordPress into the working directory on first start.
 ENV APACHE_DOCUMENT_ROOT=/var/www/wordpress

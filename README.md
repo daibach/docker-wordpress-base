@@ -55,6 +55,49 @@ above.
 Tags for versions no longer built (such as `6.9-latest`, `6.8-latest` and `7.0`)
 stay on Docker Hub without updates until they are deleted.
 
+## Build info
+
+`/etc/wordpress-parent/build.json` describes the build of the image, and is
+inherited by app images built from it:
+
+```json
+{
+    "image": "cedyrn/wordpress-parent",
+    "wordpress_version": "7.1.3",
+    "php_version": "8.4.27",
+    "debian_version": "13.7",
+    "architecture": "amd64",
+    "built_at": "2026-10-23T13:00:00Z",
+    "source_revision": "a132607...",
+    "build_url": "https://github.com/daibach/docker-wordpress-base/actions/runs/..."
+}
+```
+
+The same tag is rebuilt weekly and for Debian updates, so `built_at` shows how
+up to date an app's base image is better than the WordPress or PHP version
+does. An app picks up a new base image only when it is rebuilt. Apps can
+report it from their health check, for example in `healthcheck.php`:
+
+```php
+<?php
+$base = json_decode((string) @file_get_contents('/etc/wordpress-parent/build.json'), true) ?: [];
+
+header('Content-Type: application/json');
+echo json_encode([
+    'status' => 'ok',
+    'base_image' => [
+        'built_at' => $base['built_at'] ?? null,
+        'age_days' => isset($base['built_at']) ? intdiv(time() - strtotime($base['built_at']), 86400) : null,
+        'revision' => substr($base['source_revision'] ?? '', 0, 7) ?: null,
+    ],
+]);
+```
+
+Alerting on `age_days` (for example over 14) finds apps that haven't been
+rebuilt since the base image was updated. The health check is usually public,
+so leave version numbers out of it. `source_revision` and `build_url` are null
+for local builds. Images built before this file was added don't have it.
+
 ## Versions
 
 [`versions.json`](versions.json) lists what is built: the exact version of

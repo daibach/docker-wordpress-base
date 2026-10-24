@@ -206,9 +206,6 @@ docker buildx imagetools inspect cedyrn/wordpress-parent:7.1.3-php8.4 --format '
 docker buildx imagetools inspect cedyrn/wordpress-parent:7.1.3-php8.4 --format '{{json .SBOM}}'
 ```
 
-Docker Hub lists the attestations as an extra `unknown/unknown` platform.
-Pulling the image ignores them.
-
 ## Vulnerability scanning
 
 [Trivy](https://trivy.dev) scans the images for Debian and other package

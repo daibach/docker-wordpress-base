@@ -10,12 +10,18 @@ ARG PHP_VERSION
 
 FROM wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-apache
 
+# Composer, for apps to install plugins, themes and other dependencies in
+# their own builds
+COPY --from=composer:2.10.3 /usr/bin/composer /usr/local/bin/composer
+
 # Install Debian updates. Upstream only rebuilds its image for WordPress and
 # PHP releases, so security fixes would otherwise wait for the next one.
-# confold keeps upstream's changes to Apache's config files.
+# confold keeps upstream's changes to Apache's config files. unzip is for
+# Composer, which otherwise falls back to PHP's zip extension.
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
     -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold \
+  && apt-get install -y --no-install-recommends unzip \
   && rm -rf /var/lib/apt/lists/*
 
 # Serve WordPress from /var/www/wordpress rather than /var/www/html. The

@@ -55,6 +55,9 @@ for ext in mysqli curl dom exif fileinfo gd imagick intl json mbstring openssl x
   echo "$MODULES" | grep -qix "$ext" || fail "extension $ext not loaded"
 done
 
+echo "== Composer"
+run composer --version 2>/dev/null || fail "composer not working"
+
 echo "== PHP config"
 run php -i | grep -qx 'expose_php => Off => Off' || fail "expose_php is not Off"
 

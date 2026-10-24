@@ -105,9 +105,14 @@ patch release.
 
 ```json
 {
-  "wordpress": { "7.1": "7.1.3" },
+  "wordpress": {
+    "7.1": "7.1.3"
+  },
   "php": ["8.4", "8.5"],
-  "legacy_aliases": { "7.1-php8.4": ["7.1-latest", "latest"] }
+  "legacy_aliases": {
+    "7.1-php8.4": ["7.1-latest", "latest"],
+    "7.1-php8.5": ["7.1-future"]
+  }
 }
 ```
 

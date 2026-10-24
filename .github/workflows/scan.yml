@@ -1,0 +1,95 @@
+name: Scan images
+
+on:
+  schedule:
+    # Daily, to catch vulnerabilities disclosed since the images were built
+    - cron: "0 5 * * *"
+  # After every build that publishes images, so results match what was just
+  # published
+  workflow_run:
+    workflows: [Build images]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer scan supersedes one still running
+concurrency:
+  group: scan
+  cancel-in-progress: true
+
+env:
+  IMAGE: cedyrn/wordpress-parent
+
+jobs:
+  matrix:
+    name: Scan matrix
+    # After a build, only scan when it published: a successful build of main
+    # in this repository, not a pull request
+    if: >-
+      github.event_name != 'workflow_run' || (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event != 'pull_request' &&
+        github.event.workflow_run.head_repository.full_name == github.repository
+      )
+    runs-on: ubuntu-latest
+    outputs:
+      include: ${{ steps.matrix.outputs.include }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # The images in versions.json, by name (7.1-php8.4)
+      - name: Generate matrix
+        id: matrix
+        run: |
+          include=$(.github/scripts/matrix.sh | jq -c 'map({name})')
+          echo "include=${include}" >> "$GITHUB_OUTPUT"
+          echo "${include}" | jq .
+
+  # Scans each published image by its minor version tag and reports to the
+  # repository's Security tab. Only vulnerabilities with a fix are reported.
+  scan:
+    name: Scan ${{ matrix.name }}
+    needs: matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.matrix.outputs.include) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Trivy
+        uses: ./.github/actions/setup-trivy
+
+      - name: Scan ${{ env.IMAGE }}:${{ matrix.name }}
+        run: |
+          trivy image --image-src remote --platform linux/amd64 \
+            --scanners vuln --ignore-unfixed \
+            --format json --output trivy.json "${IMAGE}:${{ matrix.name }}"
+          trivy convert --format sarif --output trivy.sarif trivy.json
+          trivy convert --format table --severity HIGH,CRITICAL --output trivy.txt trivy.json
+          {
+            echo "### ${IMAGE}:${{ matrix.name }}: fixable HIGH and CRITICAL vulnerabilities"
+            echo '```'
+            if [ -s trivy.txt ]; then cat trivy.txt; else echo "None"; fi
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload to Security tab
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          sarif_file: trivy.sarif
+          category: wordpress-parent-${{ matrix.name }}

@@ -105,9 +105,14 @@ patch release.
 
 ```json
 {
-  "wordpress": { "7.1": "7.1.3" },
+  "wordpress": {
+    "7.1": "7.1.3"
+  },
   "php": ["8.4", "8.5"],
-  "legacy_aliases": { "7.1-php8.4": ["7.1-latest", "latest"] }
+  "legacy_aliases": {
+    "7.1-php8.4": ["7.1-latest", "latest"],
+    "7.1-php8.5": ["7.1-future"]
+  }
 }
 ```
 
@@ -150,6 +155,10 @@ date through pull requests:
   `versions.json` by hand.
 - **GitHub Actions** are pinned by commit SHA with the version in a comment.
   Minor, patch and digest updates are auto-merged.
+- **Trivy** is downloaded by a pinned version and checksum. Renovate proposes
+  new versions 3 days after release but doesn't merge them, because the
+  checksum in [`setup-trivy`](.github/actions/setup-trivy/action.yml) has to be
+  updated by hand in the same PR.
 
 WordPress security releases are patch releases, so they reach these images
 soon after upstream publishes them. Apps get them only when they rebuild.
@@ -202,8 +211,23 @@ docker buildx imagetools inspect cedyrn/wordpress-parent:7.1.3-php8.4 --format '
 docker buildx imagetools inspect cedyrn/wordpress-parent:7.1.3-php8.4 --format '{{json .SBOM}}'
 ```
 
-Docker Hub lists the attestations as an extra `unknown/unknown` platform.
-Pulling the image ignores them.
+## Vulnerability scanning
+
+[Trivy](https://trivy.dev) scans the images for Debian and other package
+vulnerabilities that have a fix available:
+
+- **Each build** scans every image after its smoke test and writes the HIGH
+  and CRITICAL findings to the run's summary. Findings never fail the build.
+- **[`scan.yml`](.github/workflows/scan.yml)** scans the published images
+  (by their `<wordpress minor>-php<php>` tag) daily at 05:00 UTC, after every
+  build of `main`, and by hand. It catches vulnerabilities disclosed after an
+  image was built. Findings of every severity go to the repository's
+  [Security tab](https://github.com/daibach/docker-wordpress-base/security/code-scanning),
+  and close there once a rebuilt image no longer has them.
+
+Most fixes reach the images through the weekly rebuild, which installs Debian
+updates. For an urgent one, run the build by hand. Plugins and themes are
+installed by the apps, so scan those in each app's build.
 
 ### Configuration
 

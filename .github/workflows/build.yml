@@ -30,21 +30,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      # One entry per WordPress and PHP version in versions.json, tagged
-      # exactly (7.1.3-php8.4) and by minor version (7.1-php8.4), plus the
-      # frozen legacy aliases (-latest is PHP 8.4, -future is PHP 8.5)
       - name: Generate matrix
         id: matrix
         run: |
-          include=$(jq -c '
-            . as $v
-            | [ $v.wordpress | to_entries[] as $wp
-                | $v.php[] as $php
-                | "\($wp.key)-php\($php)" as $name
-                | { name: $name, wordpress: $wp.value, php: $php,
-                    tags: ( ["\($wp.value)-php\($php)", $name] + ($v.legacy_aliases[$name] // [])
-                            | map("type=raw,value=\(.)") | join("\n") ) } ]
-          ' versions.json)
+          include=$(.github/scripts/matrix.sh)
           echo "include=${include}" >> "$GITHUB_OUTPUT"
           echo "${include}" | jq .
 
@@ -134,6 +123,31 @@ jobs:
           done
           docker buildx imagetools create "$@" "${IMAGE}@${DIGEST}"
           docker buildx imagetools inspect "${IMAGE}:${{ matrix.name }}"
+
+      # The scanner never sees the Docker Hub token
+      - name: Log out of Docker Hub
+        if: github.event_name != 'pull_request'
+        run: docker logout
+
+      - name: Set up Trivy
+        uses: ./.github/actions/setup-trivy
+
+      # Report only: findings never fail the build. Published images are also
+      # scanned daily by scan.yml.
+      - name: Vulnerability scan
+        continue-on-error: true
+        env:
+          REF: ${{ steps.image.outputs.ref }}
+        run: |
+          trivy image --scanners vuln --ignore-unfixed --severity HIGH,CRITICAL \
+            --format table --output trivy.txt "${REF}"
+          cat trivy.txt
+          {
+            echo "### ${{ matrix.name }}: fixable HIGH and CRITICAL vulnerabilities"
+            echo '```'
+            if [ -s trivy.txt ]; then cat trivy.txt; else echo "None"; fi
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
   # Single required status check for branch protection, independent of
   # which versions are in the matrix.

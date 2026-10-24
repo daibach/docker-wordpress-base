@@ -42,7 +42,8 @@ Current builds:
 
 These older names still point at the matching image, but are frozen to
 WordPress 7.1: new WordPress versions won't get them, and each stops updating
-when its WordPress or PHP version is dropped. Move apps to the tags above.
+when its WordPress or PHP version is dropped. Move apps to the tags above:
+[`MIGRATING.md`](MIGRATING.md) explains how.
 
 | Legacy tag | Same image as |
 | --- | --- |
@@ -50,7 +51,7 @@ when its WordPress or PHP version is dropped. Move apps to the tags above.
 | `7.1-future` | `7.1-php8.5` |
 
 Tags for versions no longer built (such as `7.0.4-php8.4`, `7.0-latest`,
-`6.9-latest` and `6.8-latest`) stay on Docker Hub without updates until they
+`7.0-future`, `6.9-latest` and `6.8-latest`) stay on Docker Hub without updates until they
 are deleted.
 
 ## Build info

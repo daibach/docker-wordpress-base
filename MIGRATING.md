@@ -83,6 +83,9 @@ different image when it rebuilds, whichever tag it uses:
   warning can drop it.
 - **[`/etc/wordpress-parent/build.json`](README.md#build-info)** describes
   the build, for the app to report from its health check.
+- **[Composer](README.md) and `unzip` are installed.** An app that builds its
+  dependencies in a separate `composer` image can use the base image instead,
+  and drop `--ignore-platform-reqs`.
 
 None of these should need a change to the app.
 

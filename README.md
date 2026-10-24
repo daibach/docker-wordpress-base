@@ -11,6 +11,7 @@ Each image is the official `wordpress:<version>-php<php>-apache` image with:
   disabled
 - the `rewrite` and `headers` Apache modules enabled
 - Debian package updates installed at build time
+- [Composer](https://getcomposer.org) and `unzip`
 
 Apps copy their plugins, themes and other files into `/usr/src/wordpress`. The
 upstream entrypoint copies WordPress into the document root when the
@@ -19,6 +20,24 @@ container first starts.
 ```dockerfile
 FROM cedyrn/wordpress-parent:7.1.3-php8.4
 COPY wp-content/plugins /usr/src/wordpress/wp-content/plugins/
+```
+
+Apps that install plugins or other dependencies with Composer can run it in
+the same image, so the platform requirements are checked against the PHP
+version and extensions the app runs with. No separate `composer` image or
+`--ignore-platform-reqs` is needed. Install in a separate stage and copy only
+what WordPress needs, so `composer.json` and `vendor/` stay out of the document
+root. Here `installer-paths` in `composer.json` puts plugins in
+`wp-content/plugins/`:
+
+```dockerfile
+FROM cedyrn/wordpress-parent:7.1.3-php8.4 AS composer
+WORKDIR /build
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --prefer-dist --no-interaction --no-progress
+
+FROM cedyrn/wordpress-parent:7.1.3-php8.4
+COPY --from=composer /build/wp-content/plugins /usr/src/wordpress/wp-content/plugins/
 ```
 
 ## Tags
@@ -156,6 +175,9 @@ date through pull requests:
   `versions.json` by hand.
 - **GitHub Actions** are pinned by commit SHA with the version in a comment.
   Minor, patch and digest updates are auto-merged.
+- **Composer** is copied from the official `composer` image at a pinned
+  version. Minor and patch updates are auto-merged 3 days after release, once
+  `Build result` passes. Major versions are proposed but not auto-merged.
 - **Trivy** is downloaded by a pinned version and checksum. Renovate proposes
   new versions 3 days after release but doesn't merge them, because the
   checksum in [`setup-trivy`](.github/actions/setup-trivy/action.yml) has to be

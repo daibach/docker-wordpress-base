@@ -73,6 +73,21 @@
       "automerge": true
     },
     {
+      "description": "Auto-merge non-major Composer updates in the Dockerfile, a few days after release",
+      "matchManagers": [
+        "dockerfile"
+      ],
+      "matchDepNames": [
+        "composer"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "minimumReleaseAge": "3 days",
+      "automerge": true
+    },
+    {
       "description": "Trivy is downloaded by checksum, which must be updated by hand in the same PR",
       "matchDepNames": [
         "aquasecurity/trivy"

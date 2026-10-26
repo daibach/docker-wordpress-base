@@ -57,21 +57,13 @@ Current builds:
 | --- | --- | --- |
 | 7.1.3 | `7.1.3-php8.4`, `7.1-php8.4` | `7.1.3-php8.5`, `7.1-php8.5` |
 
-### Legacy tags
-
-These older names still point at the matching image, but are frozen to
-WordPress 7.1: new WordPress versions won't get them, and each stops updating
-when its WordPress or PHP version is dropped. Move apps to the tags above:
-[`MIGRATING.md`](MIGRATING.md) explains how.
-
-| Legacy tag | Same image as |
-| --- | --- |
-| `latest`, `7.1-latest` | `7.1-php8.4` |
-| `7.1-future` | `7.1-php8.5` |
-
-Tags for versions no longer built (such as `7.0.4-php8.4`, `7.0-latest`,
-`7.0-future`, `6.9-latest` and `6.8-latest`) stay on Docker Hub without updates until they
-are deleted.
+Tags that are no longer built stay on Docker Hub without updates until they
+are deleted. These include versions that have been dropped (such as
+`7.0.4-php8.4`) and the legacy tags from before this repository built the
+images from `versions.json`: `latest`, `7.1-latest`, `7.1-future`,
+`7.0-latest`, `7.0-future`, `6.9-latest` and `6.8-latest`. An image named
+with no tag (`FROM cedyrn/wordpress-parent`) is using `latest`, so apps must
+always name a tag.
 
 ## Build info
 
@@ -128,11 +120,7 @@ patch release.
   "wordpress": {
     "7.1": "7.1.3"
   },
-  "php": ["8.4", "8.5"],
-  "legacy_aliases": {
-    "7.1-php8.4": ["7.1-latest", "latest"],
-    "7.1-php8.5": ["7.1-future"]
-  }
+  "php": ["8.4", "8.5"]
 }
 ```
 
@@ -159,9 +147,6 @@ the next minor version is out. Check when upstream last pushed it:
 ```sh
 curl -s https://hub.docker.com/v2/repositories/library/wordpress/tags/7.1.3-php8.4-apache | jq -r .tag_last_pushed
 ```
-
-`legacy_aliases` maps a build to the legacy tags it also publishes. Don't add
-to it.
 
 ### Updates
 

@@ -76,12 +76,30 @@ inherited by app images built from it:
     "wordpress_version": "7.1.3",
     "php_version": "8.4.27",
     "debian_version": "13.7",
+    "components": {
+        "apache": {
+            "version": "2.4.69",
+            "package": "2.4.69-1~deb13u1"
+        },
+        "openssl": {
+            "version": "3.5.7",
+            "package": "3.5.7-1~deb13u3"
+        },
+        "composer": {
+            "version": "2.11.1"
+        }
+    },
     "architecture": "amd64",
     "built_at": "2026-10-23T13:00:00Z",
     "source_revision": "a132607...",
     "build_url": "https://github.com/daibach/docker-wordpress-base/actions/runs/..."
 }
 ```
+
+Every component has a `version`. Apache and OpenSSL also have `package`, the
+Debian package version: Debian backports security fixes without changing the
+upstream version, so `package` is the one to compare with security advisories
+and scanner reports.
 
 The same tag is rebuilt weekly and for Debian updates, so `built_at` shows how
 up to date an app's base image is better than the WordPress or PHP version

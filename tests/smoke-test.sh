@@ -71,8 +71,20 @@ echo "$INFO"
   echo $info["image"] === "cedyrn/wordpress-parent"
     && $info["wordpress_version"] === $wp_version
     && $info["php_version"] === PHP_VERSION
-    && strtotime($info["built_at"]) ? "ok" : "bad";
+    && strtotime($info["built_at"])
+    && is_array($info["components"] ?? null)
+    && count($info["components"]) === 3
+    && array_filter($info["components"], fn ($c) => ($c["version"] ?? "") !== "") === $info["components"]
+    ? "ok" : "bad";
 ')" = "ok" ] || fail "build info invalid"
+
+# The WordPress entrypoint does its setup for any apache2* command, so bypass it
+APACHE_VERSION=$(docker run --rm --entrypoint apache2 "$IMAGE" -v \
+  | sed -n 's|^Server version: Apache/\([^ ]*\).*|\1|p')
+# shellcheck disable=SC2016 # PHP, not shell
+INFO_APACHE=$(run php -r 'echo json_decode(file_get_contents("/etc/wordpress-parent/build.json"), true)["components"]["apache"]["version"];')
+[ -n "$APACHE_VERSION" ] && [ "$INFO_APACHE" = "$APACHE_VERSION" ] \
+  || fail "build info Apache version $INFO_APACHE, apache2 -v says $APACHE_VERSION"
 
 echo "== Apache config"
 run apache2ctl -t

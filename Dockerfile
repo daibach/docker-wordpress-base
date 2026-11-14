@@ -12,7 +12,7 @@ FROM wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-apache
 
 # Composer, for apps to install plugins, themes and other dependencies in
 # their own builds
-COPY --from=composer:2.11.1 /usr/bin/composer /usr/local/bin/composer
+COPY --from=composer:2.11.2 /usr/bin/composer /usr/local/bin/composer
 
 # Install Debian updates. Upstream only rebuilds its image for WordPress and
 # PHP releases, so security fixes would otherwise wait for the next one.
